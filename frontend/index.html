@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Task Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Smart Task Analyzer</h1>
+            <p>Prioritize your work with AI-driven scoring.</p>
+        </header>
+
+        <main>
+            <section class="input-section">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="json-input">Bulk JSON Input</button>
+                    <button class="tab-btn" data-tab="form-input">Manual Entry</button>
+                </div>
+
+                <div id="json-input" class="tab-content active">
+                    <textarea id="task-json" placeholder="Paste your task list JSON here...">[
+  {
+    "id": 1,
+    "title": "Complete Project",
+    "due_date": "2025-12-01",
+    "estimated_hours": 5,
+    "importance": 10,
+    "dependencies": []
+  }
+]</textarea>
+                </div>
+
+                <div id="form-input" class="tab-content">
+                    <form id="task-form">
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" id="t-title" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Due Date</label>
+                                <input type="date" id="t-due" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Hours</label>
+                                <input type="number" id="t-hours" step="0.5" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Importance (1-10)</label>
+                                <input type="number" id="t-imp" min="1" max="10" value="5" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Dependencies (IDs)</label>
+                                <input type="text" id="t-deps" placeholder="1, 2, 3">
+                            </div>
+                        </div>
+                        <button type="button" id="add-task-btn">Add to List</button>
+                    </form>
+                    <div id="manual-list-preview"></div>
+                </div>
+
+                <div class="controls">
+                    <div class="strategy-select">
+                        <label>Strategy:</label>
+                        <div class="results-header">
+                            <h2>Prioritized Tasks</h2>
+                            <button id="suggest-btn" class="secondary-btn">Get Top 3 Suggestions</button>
+                        </div>
+                        <div id="loading" class="hidden">Analyzing...</div>
+                        <div id="task-list" class="task-list">
+                            <!-- Tasks will appear here -->
+                        </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
