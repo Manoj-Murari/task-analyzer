@@ -1,4 +1,7 @@
-const API_URL = 'http://127.0.0.1:8000/api/tasks';
+// Use relative path for production (Vercel), or fallback to localhost for development
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://127.0.0.1:8000/api/tasks' 
+    : '/api/tasks';
 
 // DOM Elements
 const jsonInput = document.getElementById('task-json');
@@ -9,6 +12,7 @@ const errorMsg = document.getElementById('error-msg');
 const loading = document.getElementById('loading');
 const tabBtns = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
+const strategySelect = document.getElementById('strategy-select');
 
 // Manual Form Elements
 const addTaskBtn = document.getElementById('add-task-btn');
@@ -38,7 +42,7 @@ addTaskBtn.addEventListener('click', () => {
     }
 
     const newTask = {
-        id: manualTasks.length + 1,
+        id: manualTasks.length + 100, // Temp ID for manual
         title,
         due_date: due,
         estimated_hours: parseFloat(hours),
@@ -78,7 +82,7 @@ suggestBtn.addEventListener('click', async () => {
     setLoading(true);
     try {
         const res = await fetch(`${API_URL}/suggest/`);
-        if (!res.ok) throw new Error('Failed to fetch suggestions');
+        if (!res.ok) throw new Error('Failed to fetch suggestions (Database might be empty/reset)');
         const data = await res.json();
         renderTasks(data);
     } catch (err) {
@@ -103,7 +107,15 @@ async function analyzeTasks(tasks) {
     taskList.innerHTML = '';
 
     const useAi = document.getElementById('use-ai-check').checked;
-    const url = `${API_URL}/analyze/${useAi ? '?use_ai=true' : ''}`;
+    const strategy = strategySelect.value;
+    
+    // Construct Query Params
+    const params = new URLSearchParams({
+        use_ai: useAi,
+        strategy: strategy
+    });
+
+    const url = `${API_URL}/analyze/?${params.toString()}`;
 
     try {
         const res = await fetch(url, {
@@ -116,9 +128,11 @@ async function analyzeTasks(tasks) {
 
         if (!res.ok) {
             if (data.details) {
-                throw new Error(data.error + ": " + data.details.join(', '));
+                if (Array.isArray(data.details)) {
+                    throw new Error(data.error + ": " + data.details.join(', '));
+                }
             }
-            throw new Error(JSON.stringify(data));
+            throw new Error(data.error || JSON.stringify(data));
         }
 
         renderTasks(data);
@@ -130,6 +144,11 @@ async function analyzeTasks(tasks) {
 }
 
 function renderTasks(tasks) {
+    if (tasks.length === 0) {
+        taskList.innerHTML = '<p style="text-align:center; color:#94a3b8;">No tasks found.</p>';
+        return;
+    }
+    
     taskList.innerHTML = tasks.map(task => {
         let priorityClass = 'priority-low';
         if (task.score >= 80) priorityClass = 'priority-high';
@@ -138,7 +157,7 @@ function renderTasks(tasks) {
         return `
             <div class="task-card">
                 <div class="task-info">
-                    <h3>${task.title}</h3>
+                    <h3>${task.title} <span style="font-size:0.8em; color:#94a3b8;">(#${task.id})</span></h3>
                     <div class="task-meta">
                         Due: ${task.due_date} | Est: ${task.estimated_hours}h | Imp: ${task.importance}/10
                     </div>

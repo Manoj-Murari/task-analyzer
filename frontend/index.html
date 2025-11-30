@@ -72,14 +72,32 @@
                 <div class="controls">
                     <div class="strategy-select">
                         <label>Strategy:</label>
-                        <div class="results-header">
-                            <h2>Prioritized Tasks</h2>
-                            <button id="suggest-btn" class="secondary-btn">Get Top 3 Suggestions</button>
+                        <select id="strategy-select">
+                            <option value="smart">Smart Balance (Recommended)</option>
+                            <option value="fastest">Fastest Wins (Low Effort)</option>
+                            <option value="impact">High Impact (Importance Focus)</option>
+                            <option value="deadline">Deadline Driven</option>
+                        </select>
+                        <div class="ai-toggle">
+                            <label>
+                                <input type="checkbox" id="use-ai-check"> 
+                                Use AI Analysis
+                            </label>
                         </div>
-                        <div id="loading" class="hidden">Analyzing...</div>
-                        <div id="task-list" class="task-list">
-                            <!-- Tasks will appear here -->
-                        </div>
+                        <button id="analyze-btn">Analyze Tasks</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="output-section">
+                <div class="results-header">
+                    <h2>Prioritized Tasks</h2>
+                    <button id="suggest-btn" class="secondary-btn">Get Top 3 Suggestions</button>
+                </div>
+                <div id="error-msg" class="error hidden"></div>
+                <div id="loading" class="hidden">Analyzing...</div>
+                <div id="task-list" class="task-list">
+                    </div>
             </section>
         </main>
     </div>

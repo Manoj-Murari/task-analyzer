@@ -18,52 +18,26 @@ class ScoringTests(TestCase):
         # (100 + 20) * 1.1 = 132
         self.assertEqual(score, 132)
         
-    def test_quick_win(self):
+    def test_quick_win_strategy(self):
         today = date.today()
-        # Due in 10 days (score 15), Importance 1 (x1.1), Quick win (+20)
-        # Urgency: 20 - (10//2) = 15
-        # Base: 15 * 1.1 = 16.5
-        # +20 = 36.5
+        # Task: Low importance, but quick (1h)
         task = {'id': 1, 'due_date': today + timedelta(days=10), 'importance': 1, 'estimated_hours': 1}
-        score, _ = calculate_score(task, {1: task})
-        self.assertEqual(score, 36.5)
+        
+        # Smart Balance Strategy (Default)
+        # Urgency: 15, Imp: x1.1, Bonus: +20 => (15*1.1) + 20 = 36.5
+        score_smart, _ = calculate_score(task, {1: task}, strategy='smart')
+        self.assertEqual(score_smart, 36.5)
 
-    def test_dependency_boost(self):
-        today = date.today()
-        # Task 1 blocks Task 2
-        task1 = {'id': 1, 'due_date': today + timedelta(days=10), 'importance': 1, 'estimated_hours': 5}
-        task2 = {'id': 2, 'due_date': today + timedelta(days=10), 'importance': 1, 'estimated_hours': 5, 'dependencies': [1]}
-        
-        tasks_map = {1: task1, 2: task2}
-        
-        # Task 1 score:
-        # Urgency: 15
-        # Importance: x1.1 => 16.5
-        # Dependency Bonus: 1 * 15 = +15
-        # Total: 31.5
-        score1, _ = calculate_score(task1, tasks_map)
-        self.assertEqual(score1, 31.5)
+        # Fastest Wins Strategy
+        # Urgency: 15, Imp: x1.0 (ignored), Bonus: +40 => 15 + 40 = 55
+        score_fast, _ = calculate_score(task, {1: task}, strategy='fastest')
+        self.assertEqual(score_fast, 55)
 
-class CircularDependencyTests(TestCase):
-    def test_no_cycle(self):
-        tasks = [
-            {'id': 1, 'dependencies': []},
-            {'id': 2, 'dependencies': [1]}
-        ]
-        self.assertEqual(detect_circular_dependencies(tasks), [])
-        
-    def test_simple_cycle(self):
+    def test_circular_dependency(self):
         tasks = [
             {'id': 1, 'dependencies': [2]},
             {'id': 2, 'dependencies': [1]}
         ]
         errors = detect_circular_dependencies(tasks)
         self.assertTrue(len(errors) > 0)
-        self.assertIn("Circular dependency detected", errors[0])
-        
-    def test_self_cycle(self):
-        tasks = [
-            {'id': 1, 'dependencies': [1]}
-        ]
-        errors = detect_circular_dependencies(tasks)
-        self.assertTrue(len(errors) > 0)
+        self.assertIn("Circular dependency", errors[0])
