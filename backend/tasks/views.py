@@ -8,7 +8,7 @@ from .models import Task
 class AnalyzeTasksView(APIView):
     def post(self, request):
         """
-        Analyzes a list of tasks.
+        Analyzes a list of tasks using the standard priority algorithm.
         """
         serializer = TaskInputSerializer(data=request.data, many=True)
         if serializer.is_valid():
@@ -24,32 +24,22 @@ class AnalyzeTasksView(APIView):
             if cycles:
                 return Response({'error': 'Circular dependencies detected', 'details': cycles}, status=status.HTTP_400_BAD_REQUEST)
 
-            # 3. Calculate scores
-            use_ai = request.query_params.get('use_ai') == 'true'
+            # 3. Calculate scores (Standard Algorithm Only)
             strategy = request.query_params.get('strategy', 'smart') # Default to smart
             
-            results = None
-            
-            if use_ai:
-                from .ai_service import analyze_with_gemini
-                results = analyze_with_gemini(tasks_data)
-                
-            # Fallback to standard algorithm
-            if not results:
-                tasks_map = {t['id']: t for t in tasks_data}
-                results = []
-                for task in tasks_data:
-                    score, explanation = calculate_score(task, tasks_map, strategy=strategy)
-                    task_result = task.copy()
-                    task_result['score'] = score
-                    task_result['explanation'] = explanation
-                    results.append(task_result)
+            tasks_map = {t['id']: t for t in tasks_data}
+            results = []
+            for task in tasks_data:
+                score, explanation = calculate_score(task, tasks_map, strategy=strategy)
+                task_result = task.copy()
+                task_result['score'] = score
+                task_result['explanation'] = explanation
+                results.append(task_result)
             
             # 4. Sort by score descending
             results.sort(key=lambda x: x['score'], reverse=True)
             
             # 5. Persist to DB for "Suggest" feature compatibility
-            # Wipe old data to keep state clean for this demo
             Task.objects.all().delete()
             
             id_map = {} 

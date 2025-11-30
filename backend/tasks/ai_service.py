@@ -18,7 +18,8 @@ def analyze_with_gemini(tasks_data):
         return None
 
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-pro')
+    # FIX: Changed deprecated model 'gemini-pro' to the current stable version
+    model = genai.GenerativeModel('gemini-2.5-flash') 
 
     prompt = f"""
     You are an expert project manager. I have a list of tasks. 
@@ -61,6 +62,7 @@ def analyze_with_gemini(tasks_data):
                 task['score'] = ai_res.get('score', 0)
                 task['explanation'] = "✨ AI Insight: " + ai_res.get('explanation', '')
             else:
+                # This should not happen if AI returns all IDs, but serves as a safety net
                 task['score'] = 0
                 task['explanation'] = "AI could not analyze this task."
             merged_tasks.append(task)
@@ -68,5 +70,7 @@ def analyze_with_gemini(tasks_data):
         return merged_tasks
 
     except Exception as e:
-        print(f"Gemini API Error: {e}")
+        # Note: Your terminal is correctly printing this error, 
+        # but the fallback logic ensures the user still sees the standard score.
+        print(f"Gemini API Error: {e}") 
         return None

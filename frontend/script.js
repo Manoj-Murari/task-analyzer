@@ -13,6 +13,7 @@ const loading = document.getElementById('loading');
 const tabBtns = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 const strategySelect = document.getElementById('strategy-select');
+// Removed use-ai-check variable
 
 // Manual Form Elements
 const addTaskBtn = document.getElementById('add-task-btn');
@@ -106,12 +107,11 @@ async function analyzeTasks(tasks) {
     errorMsg.classList.add('hidden');
     taskList.innerHTML = '';
 
-    const useAi = document.getElementById('use-ai-check').checked;
     const strategy = strategySelect.value;
     
     // Construct Query Params
     const params = new URLSearchParams({
-        use_ai: useAi,
+        // Removed use_ai parameter
         strategy: strategy
     });
 
